@@ -1,0 +1,117 @@
+body {
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+p {
+  font-size: 1em; /* 14px */
+  line-height: 1.5000em; /* 21px */
+  margin: 0 0 1.5000em 0;
+}
+/* 24px - The quick brown fox jumps over the lazy dog */
+h1, .h1 {
+  font-size: 1.7143em; /* 24px */
+  line-height: 1.7500em; /* 42px */
+  margin-top: 0.8750em;  margin-bottom: 0.0000em;
+}
+/* 22px - The quick brown fox jumps over the lazy dog */
+h2, .h2 {
+  font-size: 1.5714em; /* 22px */
+  line-height: 1.9091em; /* 42px */
+  margin-top: 0.9545em;  margin-bottom: 0.0000em;
+}
+/* 20px - The quick brown fox jumps over the lazy dog */
+h3, .h3 {
+  font-size: 1.4286em; /* 20px */
+  line-height: 1.0500em; /* 21px */
+  margin-top: 1.0500em;  margin-bottom: 0.0000em;
+}
+/* 18px - The quick brown fox jumps over the lazy dog */
+h4, .h4 {
+  font-size: 1.2857em; /* 18px */
+  line-height: 1.1667em; /* 21px */
+  margin-top: 1.1667em;  margin-bottom: 0.0000em;
+}
+/* 16px - The quick brown fox jumps over the lazy dog */
+h5, .h5 {
+  font-size: 1.1429em; /* 16px */
+  line-height: 1.3125em; /* 21px */
+  margin-top: 1.3125em;  margin-bottom: 0.0000em;
+}
+/* 14px - The quick brown fox jumps over the lazy dog */
+h6, .h6 {
+  font-size: 1.0000em; /* 14px */
+  line-height: 1.5000em; /* 21px */
+  margin-top: 1.5000em;  margin-bottom: 0.0000em;
+}
+
+
+.headline {
+  margin-top: 0;
+}
+
+.message {
+  padding:  1em;
+  border:   1px solid rgba(0,0,0, 0.5);
+  position: fixed;
+  width:    100%;
+  z-index:  10;
+
+  &.good {
+    background-color: #96C995;
+    color:            #1B5D11;
+    border-color:     #035100;
+  }
+  &.bad {
+    background-color: #ECBCBE;
+    color:            #8C0000;
+    border-color:     #7B0000;
+  }
+}
+
+.underline {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.hidden {
+  display: none !important;
+}
+
+
+.content {
+  position:     relative;
+  padding:      1em;
+  // max-width: 100%;
+}
+
+
+
+#mini-modal {
+  position:         fixed;
+  display:          block;
+  background-color: #E8E6E8;
+  min-width:        50%;
+  min-height:       50%;
+  max-height:       100%;
+  overflow:         auto;
+  border:           2px solid black;
+  top:              50%;
+  left:             50%;
+  transform:        translate(-50%, -50%);
+  padding:          1em;
+  z-index:          10000;
+  border-radius:    3px ;
+}
+#mini-modal {
+  white-space: pre-wrap;
+}
+
+#mini-modal-bg {
+  position:   fixed;
+  top:        0;
+  left:       0;
+  right:      0;
+  bottom:     0;
+  background: rgba(0,0,0,0.7);
+  z-index:    9999;
+}
