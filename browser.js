@@ -1,11 +1,20 @@
 /* jshint node:true */
 'use strict';
-const _            = require('lodash');
-const $            = require('jquery');
-const fullCalendar = require('fullcalendar');
-const moment       = require('moment');
-const ipcRenderer  = require('electron').ipcRenderer;
-const BPromise     = require('bluebird');
+// const fs           = require('fs');
+// const _            = require('lodash');
+const $               = require('jquery');
+// const fullCalendar = require('fullcalendar');
+const moment          = require('moment');
+const ipcRenderer     = require('electron').ipcRenderer;
+const BPromise        = require('bluebird');
+// const hilite       = require('highlight').Highlight;
+// const iconUtils    = require('./icons');
+const spawn           = require('child_process').spawn;
+const fork            = require('child_process').fork;
+
+var lineHeight = 16;
+var commitData = [];
+var symbolElts = [];
 
 BPromise.config({
     // Enable warnings.
@@ -28,58 +37,70 @@ function appMessage(text, goodBadUgly) {
     }, 1000);
 }
 
-function renderIcon(text, options) {
-    var defaults = {
-        fillStyle:    '#FFF',
-        font:         '9px sans-serif',
-        textAlign:    'center',
-        textBaseline: 'middle',
-    };
-    if (typeof(options) !== 'object') {
-        options = {};
-    }
-    Object.keys(options).forEach(function(key) {
-        defaults[key] = options[key];
+
+
+function openFile(fileName) {
+    var gitBlame = spawn('git', ['blame', '--line-porcelain', fileName]);
+    var text     = '';
+
+    gitBlame.stdout.on('data', (d) => {
+        text += d;
     });
-    options = defaults;
 
-    var $canvas = $('canvas.icon');
-    if (!$canvas.length) {
-        $canvas = $('<canvas width="24" height="24"></canvas>');
-    }
-    var ctx = $canvas.get(0).getContext('2d');
-    ctx.clearRect(0, 0, $canvas.width(), $canvas.height());
-    Object.keys(options).forEach(function(key) {
-        ctx[key] = options[key];
+    gitBlame.on('close',  () => {
+        var sourceLines = [];
+        var lines       = text.split(/\r?\n/);
+        commitData      = [];
+        var record      = {};
+
+        for(let i in lines) {
+            var line = lines[i];
+            if (line[0] === '\t') {
+                sourceLines.push(line.slice(1));
+                commitData.push(record);
+                record = {};
+            } else {
+                var key, value;
+                line  = line.split(' ');
+                key   = line.splice(0, 1)[0];
+                value = line.join(' ');
+
+                if (key.length === 40 && key.match(/^[0-9a-f]+$/i)) {
+                    value = key;
+                    key   = 'hash';
+                }
+                // camelCase from dash-case
+                key = String(key).replace(/-([a-z])/g, function(match, group1) {
+                    return group1.toUpperCase();
+                });
+                if (key.match(/Time$/)) {
+                    value = new Date(value * 1000);
+                }
+                record[key] = value;
+            }
+        }
+        // var notes = text.replace(/([0-9a-fA-F]{8} \([^)]+\) )(.*)/g,      "$1");
+        // var lines = text.replace(/[0-9a-fA-F]{8} \([^)]+ (\d+)\) (.*)/g,  "$1");
+        // text      = text.replace(/[0-9a-fA-F]{8} \([^)]+\) (.*)/g,        "$1");
+
+        // $('.source pre code').text(sourceLines.join("\n"));
+        var html = '';
+        for(let i=1; i <= sourceLines.length; i++) {
+            html += `<li>${i}</li>`;
+        }
+        $('.lines').html(html);
+
+        var source = sourceLines.join("\n");
+        $('.source pre code').text(source);
+
+        var worker = fork(`${__dirname}/hlworker.js`);
+        worker.on('message', (msg) => {
+            $('.source pre code').html(msg.result);
+        });
+        worker.send({source: source});
+        // hilite.highlightBlock($('.source pre code')[0]);
     });
-    // ctx.fillStyle    = '#FFF';
-    // ctx.font         = '9px sans-serif';
-    // ctx.textAlign    = 'center';
-    // ctx.textBaseline = 'middle';
-    ctx.fillText(text, 12, 12);
-    var data = $canvas.get(0).toDataURL('image/png');
-    return data;
 }
-
-function updateIconAndTooltip(hours) {
-	hours        = Number(hours).toFixed(1);
-	var data     = renderIcon(hours);
-	ipcRenderer.send('icon-rendered', data);
-	ipcRenderer.send('tooltip-data', getHoursText(hours, settings.lastProject, settings.lastOptions));
-}
-
-function flashIcon(text, color, delay) {
-    if (typeof(delay) === 'undefined') {
-        delay = 500;
-    }
-    var data = renderIcon(text, {fillStyle: color});
-    ipcRenderer.send('icon-rendered', data);
-    setTimeout(function() {
-        data = renderIcon(text);
-        ipcRenderer.send('icon-rendered', data);
-    }, delay);
-}
-
 
 $(function() {
     if (localStorage.settings) {
@@ -91,10 +112,14 @@ $(function() {
         }
     }
 
-    // In renderer process (web page).
-    ipcRenderer.on('render-icon', function(event, text) {
-        updateIconAndTooltip(text);
+    ipcRenderer.on('flame-command-line', function(event, args) {
+        args = args.slice(2); // Remove node, electron
+        openFile(args[0]);
     });
+    // In renderer process (web page).
+    // ipcRenderer.on('render-icon', function(event, text) {
+        // updateIconAndTooltip(text);
+    // });
 
     // ipcRenderer.on('debug', function(event, arg) {
     //     debugArg = arg;
@@ -111,6 +136,36 @@ $(function() {
         shell.openExternal(href);
     });
 
+
+    function getSourceLine(clientY) {
+        var line = clientY - $('.source').offset().top + $(window).scrollTop();
+        line    /= lineHeight;
+        line     = Math.floor(line);
+        return line;
+    }
+
+    $('.source').on('mousemove', function(e) {
+        $('.lines li').css('color', '');
+        var line = getSourceLine(e.clientY);
+        var note = $('.lines li').get(line);
+        if (note) {
+            $(note).css('color', 'yellow');
+        }
+    });
+
+    $('.source').on('click', function(e) {
+        var line = getSourceLine(e.clientY);
+        var note = commitData[line];
+        if (note) {
+            console.log(note);
+            var str = `
+${note.hash}
+${moment(note.committerTime).fromNow()}
+${note.author}
+`;
+            alert(str);
+        }
+    });
 //     globalCalendarElt = $('.info-details');
 //     window.Calendar   = globalCalendarElt.fullCalendar({
 //         editable: false,

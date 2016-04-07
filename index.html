@@ -1,29 +1,26 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stish - stash viewer</title>
-    <link rel="stylesheet" href="assets/pure/pure-min.css">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="node_modules/fullcalendar/dist/fullcalendar.min.css">
-  </head>
-  <body>
-    <div id="layout" class="window">
-      <header class="toolbar toolbar-header">
-        <h1 class="title">Stish <small><em>Git stash viewer</em></small></h1>
-      </header>
-
-      <div class="pure-u window-content">
-        <div class="content">
-          <div id="app-message" class="app-message message hidden pure-u-1"></div>
-          <h1 class="headline">Stish</h1>
-        </div>
-      </div>
-      <footer class="toolbar toolbar-footer">
-        <div class="copyright">©2016 Lucas Hudson</h1>
-      </footer>
-    </div>
-    <script src="browser.js"></script>
-  </body>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="assets/style.css">
+	<link rel="stylesheet" href="node_modules/highlight.js/styles/monokai-sublime.css">
+</head>
+<body>
+	<div class="container">
+		<div class="annotations">
+			<ul class="other"></ul>
+			<ul class="lines"></ul>
+		</div>
+		<div class="source">
+			<pre><code>
+			</code></pre>
+		</div>
+	</div>
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script> -->
+	<script src="browser.js"></script>
+	<div class="search">
+		<input type="text">
+	</div>
+</body>
 </html>

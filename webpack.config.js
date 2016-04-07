@@ -4,7 +4,7 @@ var path    = require('path');
 // webpack.config.js
 module.exports = {
 	entry: {
-		main: "browser.js"
+		anim: "anim.js"
 	},
     resolve: {
     	root: __dirname,
@@ -23,7 +23,7 @@ module.exports = {
     // },
 	module: {
 		loaders: [
-	        {
+	        /*{
 	        		test:    /\.js$/,
 	        		exclude: /node_modules/,
 	        		loader:  'babel',
@@ -32,7 +32,7 @@ module.exports = {
 	        			plugins:     'object-assign'
 	        			// optional: 'minification.removeConsole'
 	        		}
-	        }
+	        }*/
 		],
 	},
 	devtool: '#source-map',

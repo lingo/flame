@@ -1,0 +1,53 @@
+
+html, body {
+	box-sizing: border-box;
+	width:      100%;
+	position:   relative;
+}
+.item {
+    padding: 0.5em;
+    border: 1px solid rgba(0,0,0,0.2);
+    margin: 1em;
+    width: 3em;
+    text-align: center;
+    border-radius: 0.3em;
+    box-sizing: border-box;
+    position: relative;
+}
+.item:after {
+	display: block;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: -.9em;
+	content: '↓';
+	font-size: 1.2em;
+}
+.item:last-child:after {
+	content: none;
+}
+.container {
+	position: relative;
+	width: 100%;
+}
+.wrapper {
+	position:   relative;
+	max-height: 20em;
+	overflow:   hidden;
+	border:     2px solid green;
+	display:    inline-block;
+	vertical-align: top;
+	width: 70%;
+}
+.viewport {
+	height: 20em;
+}
+.scroller {
+	display:        inline-block;
+	height:         100%;
+	margin:         0;
+	max-height:     20em;
+	overflow:       auto;
+	vertical-align: top;
+	width:          1em;
+}

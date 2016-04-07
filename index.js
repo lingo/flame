@@ -87,70 +87,71 @@ app.on('ready', function() {
     });
 
 
+
     // ipcMain.on('count-hours', function(event, projectID) {
     //     console.log('count-hours event initiated');
     // });
 
-    var appIcon = null;
+    // var appIcon = null;
 
     // Menu.setApplicationMenu(null);
-    appIcon = new Tray(myPath('icon.png'));
-    appIcon.setToolTip('Freshbooks helper.');
+    // appIcon = new Tray(myPath('icon.png'));
+    // appIcon.setToolTip('Freshbooks helper.');
 
 
-    var lastProject = null;
+    // function updateMenuIcon(data) {
+    //     appIcon.setImage(nativeImage.createFromDataURL(data));
+    // }
 
-    function updateMenuIcon(data) {
-        appIcon.setImage(nativeImage.createFromDataURL(data));
-    }
+    // function updateMenu() {
+	   //  var template = [];
 
-    function updateMenu() {
-	    var template = [];
+    //     template.unshift({
+    //         type: 'separator'
+    //     });
+    //     template.unshift({
+    //         label: 'Settings...',
+    //         enabled: false
+    //     });
+    //     template.push({
+    //         type: 'separator'
+    //     });
+    //     template.push({
+    //         label:       'Quit',
+    //         role:        'quit',
+    //         accelerator: 'Alt+F4',
+    //         click:       function(e) {
+    //             console.log('menu event', e);
+    //             app.quit();
+    //         }
+    //     });
+    //     var contextMenu = Menu.buildFromTemplate(template);
+    //     appIcon.setContextMenu(contextMenu);
+    //     // mainWindow.webContents.send('debug', appIcon);
+    // }
 
-        template.unshift({
-            type: 'separator'
-        });
-        template.unshift({
-            label: 'Settings...',
-            enabled: false
-        });
-        template.push({
-            type: 'separator'
-        });
-        template.push({
-            label:       'Quit',
-            role:        'quit',
-            accelerator: 'Alt+F4',
-            click:       function(e) {
-                console.log('menu event', e);
-                app.quit();
-            }
-        });
-        var contextMenu = Menu.buildFromTemplate(template);
-        appIcon.setContextMenu(contextMenu);
-        // mainWindow.webContents.send('debug', appIcon);
-    }
+    // updateMenu();
 
-    updateMenu();
+    // ipcMain.on('tooltip-data', function(event, data) {
+    //     appIcon.setToolTip(data);
+    // });
+    // ipcMain.on('icon-rendered', function(event, data) {
+    //     updateMenuIcon(data);
+    // });
+    // ipcMain.on('tray-adjust-menu', function(event, projects) {
+    // 	console.log('tray-adjust-menu event initiated');
+    // 	updateMenu(projects);
+    // });
 
-    ipcMain.on('tooltip-data', function(event, data) {
-        appIcon.setToolTip(data);
+    mainWindow.webContents.on('did-finish-load', function() {
+        mainWindow.webContents.send('flame-command-line', process.argv);
     });
-    ipcMain.on('icon-rendered', function(event, data) {
-        updateMenuIcon(data);
-    });
-    ipcMain.on('tray-adjust-menu', function(event, projects) {
-    	console.log('tray-adjust-menu event initiated');
-    	updateMenu(projects);
-    });
-
-
-    appIcon.on('click', function(e) {
-        if (mainWindow.isVisible()) {
-            mainWindow.hide();
-        } else {
-            mainWindow.show();
-            mainWindow.focus();
-        }
-    });
+    // appIcon.on('click', function(e) {
+    //     if (mainWindow.isVisible()) {
+    //         mainWindow.hide();
+    //     } else {
+    //         mainWindow.show();
+    //         mainWindow.focus();
+    //     }
+    // });
 });

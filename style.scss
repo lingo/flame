@@ -1,6 +1,7 @@
 body {
   font-size: 14px;
   font-family: Arial, sans-serif;
+  background: #222;
 }
 
 p {
@@ -114,4 +115,61 @@ h6, .h6 {
   bottom:     0;
   background: rgba(0,0,0,0.7);
   z-index:    9999;
+}
+
+
+
+.annotations {
+  max-width: 20vw;
+  display: inline-block;
+  vertical-align: top;
+
+  ul {
+    display:        inline-block;
+    max-width:      45%;
+    vertical-align: top;
+    margin-top:     0;
+    padding-top:    0;
+    list-style:     none;
+    padding-left:   0;
+  }
+
+  .other {
+    display: none;
+  }
+}
+
+.source {
+  max-width:      75vw;
+  display:        inline-block;
+  vertical-align: top;
+  color:          white;
+}
+
+.hljs, code, pre {
+  margin-top:  0 !important;
+  padding-top: 0 !important;
+  tab-size:    2;
+}
+
+
+.search {
+  display:    none;
+  width:      33vw;
+  padding:    2em;
+  background: rgba(255,255,255,0.5);
+  position:   fixed;
+  top:        50%;
+  left:       50%;
+  transform:  translateY(-50%) translateX(-50%);
+  box-sizing: border-box;
+  text-align: center;
+
+  input {
+    width:      90%;
+    display:    block;
+    padding:    0.5em;
+    margin:     0px auto;
+    box-sizing: border-box;
+  }
 }

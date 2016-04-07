@@ -14,16 +14,22 @@
     "fullcalendar": "^2.6.1",
     "jquery": "^2.2.0",
     "lodash": "^4.0.1",
-    "moment": "^2.11.1"
+    "moment": "^2.11.1",
+    "nodegit": "^0.11.3",
+    "transparency": "^1.0.0"
   },
   "devDependencies": {
+    "bluebird": "^3.3.4",
     "csswring": "^4.2.1",
     "electron-prebuilt": "^0.36.6",
     "electron-rebuild": "^1.1.2",
     "gulp": "^3.9.0",
     "gulp-postcss": "^6.0.1",
     "gulp-rename": "^1.2.2",
+    "highlight": "^0.2.4",
+    "highlight.js": "^9.3.0",
     "node-sass": "^3.4.2",
+    "nodegit": "^0.11.9",
     "postcss-cssnext": "^2.4.0",
     "postcss-nested": "^1.0.0",
     "sass-loader": "^3.1.2",
