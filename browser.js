@@ -12,9 +12,13 @@ const BPromise        = require('bluebird');
 const spawn           = require('child_process').spawn;
 const fork            = require('child_process').fork;
 
-var lineHeight = 16;
-var commitData = [];
-var symbolElts = [];
+const MAX_LINE_HEIGHT = 32;
+
+var appData = {
+	lineHeight: 16,
+	commitData: [],
+	symbols:    {},
+};
 
 BPromise.config({
     // Enable warnings.
@@ -38,68 +42,44 @@ function appMessage(text, goodBadUgly) {
 }
 
 
+function calcLineHeight($sourceElt) {
+	$sourceElt.find('span').each((idx, elt) => {
+		var $this = $(elt);
+		if ($this.height() < MAX_LINE_HEIGHT) {
+			appData.lineHeight = $this.height();
+			return false;
+		}
+		return true;
+	});
+}
 
 function openFile(fileName) {
-    var gitBlame = spawn('git', ['blame', '--line-porcelain', fileName]);
-    var text     = '';
+	var gitBlame = require('./gitblame');
+	gitBlame(fileName)
+		.then(function(data) {
+			appData.commitData = data.commitData;
+			var source         = data.sourceLines.join("\n");
+			var $sourceElt     = $('.source pre code');
+			$sourceElt.text(source);
 
-    gitBlame.stdout.on('data', (d) => {
-        text += d;
-    });
+			var html = '';
+			for (let i = 1; i <= data.sourceLines.length; i++) {
+				html += `<li>${i}</li>`;
+			}
+			$('.lines').html(html);
 
-    gitBlame.on('close',  () => {
-        var sourceLines = [];
-        var lines       = text.split(/\r?\n/);
-        commitData      = [];
-        var record      = {};
+			var worker         = fork(`${__dirname}/hlworker.js`);
 
-        for(let i in lines) {
-            var line = lines[i];
-            if (line[0] === '\t') {
-                sourceLines.push(line.slice(1));
-                commitData.push(record);
-                record = {};
-            } else {
-                var key, value;
-                line  = line.split(' ');
-                key   = line.splice(0, 1)[0];
-                value = line.join(' ');
+			worker.on('message', (msg) => {
+				$sourceElt.html(msg.result);
+				calcLineHeight($sourceElt);
+				// $('.source pre code .hljs')
+			});
 
-                if (key.length === 40 && key.match(/^[0-9a-f]+$/i)) {
-                    value = key;
-                    key   = 'hash';
-                }
-                // camelCase from dash-case
-                key = String(key).replace(/-([a-z])/g, function(match, group1) {
-                    return group1.toUpperCase();
-                });
-                if (key.match(/Time$/)) {
-                    value = new Date(value * 1000);
-                }
-                record[key] = value;
-            }
-        }
-        // var notes = text.replace(/([0-9a-fA-F]{8} \([^)]+\) )(.*)/g,      "$1");
-        // var lines = text.replace(/[0-9a-fA-F]{8} \([^)]+ (\d+)\) (.*)/g,  "$1");
-        // text      = text.replace(/[0-9a-fA-F]{8} \([^)]+\) (.*)/g,        "$1");
-
-        // $('.source pre code').text(sourceLines.join("\n"));
-        var html = '';
-        for(let i=1; i <= sourceLines.length; i++) {
-            html += `<li>${i}</li>`;
-        }
-        $('.lines').html(html);
-
-        var source = sourceLines.join("\n");
-        $('.source pre code').text(source);
-
-        var worker = fork(`${__dirname}/hlworker.js`);
-        worker.on('message', (msg) => {
-            $('.source pre code').html(msg.result);
-        });
-        worker.send({source: source});
-        // hilite.highlightBlock($('.source pre code')[0]);
-    });
+			worker.send({
+				source: source
+			});
+		});
 }
 
 $(function() {
@@ -139,7 +119,7 @@ $(function() {
 
     function getSourceLine(clientY) {
         var line = clientY - $('.source').offset().top + $(window).scrollTop();
-        line    /= lineHeight;
+        line    /= appData.lineHeight;
         line     = Math.floor(line);
         return line;
     }
@@ -155,7 +135,7 @@ $(function() {
 
     $('.source').on('click', function(e) {
         var line = getSourceLine(e.clientY);
-        var note = commitData[line];
+        var note = appData.commitData[line];
         if (note) {
             console.log(note);
             var str = `
