@@ -1,14 +1,15 @@
 /* jshint node:true */
 'use strict';
-const $               = require('jquery');
-const keycode         = require('keycode');
-const ipcRenderer     = require('electron').ipcRenderer;
-const BPromise        = require('bluebird');
-const spawn           = require('child_process').spawn;
-const fork            = require('child_process').fork;
-const spawnToOutput   = require('./spawnToOutput');
-const modal           = require('./miniModal');
-const shortcuts       = require('./shortcuts');
+const path          = require('path');
+const $             = require('jquery');
+const keycode       = require('keycode');
+const ipcRenderer   = require('electron').ipcRenderer;
+const BPromise      = require('bluebird');
+const spawn         = require('child_process').spawn;
+const fork          = require('child_process').fork;
+const spawnToOutput = require('./spawnToOutput');
+const modal         = require('./miniModal');
+const shortcuts     = require('./shortcuts');
 
 // Used for heuristic detection of first usable span when measuring line height
 const MAX_LINE_HEIGHT = 32;
@@ -54,8 +55,12 @@ ${message}
 }
 
 function appMessage(text, goodBadUgly) {
-    goodBadUgly = goodBadUgly || 'good';
     var message = $('#app-message');
+	if (!text) {
+		message.hide();
+		return;
+	}
+    goodBadUgly = goodBadUgly || 'good';
     message.removeClass('bad good').addClass(goodBadUgly);
     message.text(text).removeClass('hidden').show();
     setTimeout(function() {
@@ -100,9 +105,11 @@ function highlightCommit(commit) {
 }
 
 function openFile(fileName) {
+	appMessage(`Loading ${fileName}`, 'good');
 	var gitBlame = require('./gitblame');
 	gitBlame(fileName)
 		.then(function(data) {
+			$('title').text(path.resolve(fileName));
 			appData.commitData = data.commitData;
 			var source         = data.sourceLines.join("\n");
 			var $sourceElt     = $('.source pre code');
@@ -129,6 +136,7 @@ function openFile(fileName) {
 				$sourceElt.html(msg.result);
 				calcLineHeight($sourceElt);
 				buildSymbols($sourceElt);
+				appMessage();
 			});
 
 			worker.send({

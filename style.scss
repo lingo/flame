@@ -200,3 +200,25 @@ h6, .h6 {
   background: #6C999D;
   z-index:    0;
 }
+
+
+#app-message {
+    position:      fixed;
+    top:           0;
+    left:          0;
+    width:         100%;
+    min-height:    1em;
+    padding:       0.5em;
+    background:    gray;
+    color:         white;
+    z-index:       20;
+    border-bottom: 1px dotted white;
+    opacity:       0.8;
+
+    &.good {
+      background-color: #00922B;
+    }
+    &.bad {
+      background-color: #A72727;
+    }
+}
