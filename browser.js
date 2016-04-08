@@ -2,7 +2,6 @@
 'use strict';
 const $               = require('jquery');
 const keycode         = require('keycode');
-const moment          = require('moment');
 const ipcRenderer     = require('electron').ipcRenderer;
 const BPromise        = require('bluebird');
 const spawn           = require('child_process').spawn;
