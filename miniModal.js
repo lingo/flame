@@ -1,5 +1,22 @@
 /* jshint node:true */
 'use strict';
+/**
+ * Miniature modal dialog module, for simplicity.
+ *
+ * Usage:
+ *
+ * const modal = require('miniModal');
+ * // Optional second argument can provide style overrides
+ * var m = modal("<b>Html</b> content goes here", { style { font-weight: bold; }});
+ * m.close();
+ * // OR
+ * modal.close();
+ *
+ * @author  Luke Hudson <git@speak.geek.nz>
+ */
+
+var id    = 'mini-modal';
+var bgID  = 'mini-modal-bg';
 
 function keymap(obj, fn) {
     if (typeof(obj) === 'function') {
@@ -29,20 +46,19 @@ module.exports = function miniModal(content, options) {
         });
     }
 
+    var div   = _document.querySelector('#' + id) || _document.createElement('div');
+    var bgDiv = _document.querySelector('#' + bgID) || _document.createElement('div');
 
-    var div   = _document.createElement('div');
-    var bgDiv = _document.createElement('div');
-
-    div.id        = 'mini-modal';
+    div.id        = id;
     div.innerHTML = content;
-    bgDiv.id      = 'mini-modal-bg';
+    bgDiv.id      = bgID;
 
     var style     = {
         'position':         'fixed',
         'display':          'block',
         'background-color': 'gainsboro',
         'min-width':        '50%',
-        'min-height':       '50%',
+        'min-height':       '2em',
         'max-height':       '100%',
         'overflow':         'auto',
         'border':           '2px solid black',
@@ -51,7 +67,8 @@ module.exports = function miniModal(content, options) {
         'transform':        'translate(-50%, -50%)',
         'padding':          '1em',
         'z-index':          '10000',
-        'border-radius':    '3px'
+        'border-radius':    '3px',
+        'display':          'inline-block'
     };
     if (defOptions.style) {
         div.style.cssText = keymap.call(style, function(k,v) { return k + ':' + v; }).join(';');
@@ -72,6 +89,26 @@ module.exports = function miniModal(content, options) {
     };
     _document.body.appendChild(bgDiv);
     _document.body.appendChild(div);
+    return {
+        close: function() {
+            div.hide();
+            bgDiv.hide();
+        },
+        element: function() {
+            return div;
+        }
+    };
+};
+
+module.exports.close = function() {
+    var elt = document.querySelector('#' + bgID);
+    if (elt) {
+        elt.style.display = 'none';
+    }
+    elt = document.querySelector('#' + id);
+    if (elt) {
+        elt.style.display = 'none';
+    }
 };
 
 module.exports.setDocument = function(doc) {

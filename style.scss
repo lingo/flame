@@ -120,6 +120,7 @@ h6, .h6 {
 
 
 .lines {
+  font-family: CamingoCode, Inconsolable, Inconsolata, "Droid Sans Mono", "Courier New", monospace;
   display:        block;
   vertical-align: top;
   margin-top:     8px;
@@ -156,6 +157,7 @@ h6, .h6 {
   margin-top:  0 !important;
   padding-top: 0 !important;
   tab-size:    2;
+  font-family: CamingoCode, Inconsolable, Inconsolata, "Droid Sans Mono", "Courier New", monospace;
 }
 
 
@@ -188,4 +190,13 @@ h6, .h6 {
       background: #FFF182;
     }
   }
+}
+
+.currentLine {
+  position:   fixed;
+  top:        50%;
+  left:       0;
+  transform:  translateY(-50%);
+  background: #6C999D;
+  z-index:    0;
 }

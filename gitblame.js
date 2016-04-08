@@ -1,7 +1,7 @@
 /* jshint node:true */
 'use strict';
 
-const fork = require('child_process').fork;
+const fork          = require('child_process').fork;
 const spawnToOutput = require('./spawnToOutput');
 
 function dashToCamelCase(s) {

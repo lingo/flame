@@ -1,31 +1,29 @@
 /* jshint node:true */
 'use strict';
-// const fs           = require('fs');
-// const _            = require('lodash');
 const $               = require('jquery');
 const keycode         = require('keycode');
-// const fullCalendar = require('fullcalendar');
 const moment          = require('moment');
 const ipcRenderer     = require('electron').ipcRenderer;
 const BPromise        = require('bluebird');
-// const hilite       = require('highlight').Highlight;
-// const iconUtils    = require('./icons');
-// const spawn        = require('child_process').spawn;
+const spawn           = require('child_process').spawn;
 const fork            = require('child_process').fork;
 const spawnToOutput   = require('./spawnToOutput');
-
+const modal           = require('./miniModal');
 const shortcuts       = require('./shortcuts');
 
+// Used for heuristic detection of first usable span when measuring line height
 const MAX_LINE_HEIGHT = 32;
 
+// Globally-used data for app state.
 var appData = {
-	lineHeight:   16,
-	commitData:   [],
-	commitLines:  {},
-	symbols:      {},
-	searchMode:   null,
-	currentMatch: null,
-	matches:      []
+	lineHeight:    16,
+	commitData:    [],
+	commitLines:   {},
+	symbols:       {},
+	searchMode:    null,
+	currentMatch:  null,
+	matches:       [],
+	currentCommit: null
 };
 
 BPromise.config({
@@ -37,7 +35,18 @@ BPromise.config({
     cancellation: false
 });
 
-var settings          = { };
+// var settings          = { };
+
+
+function commitMessage(message) {
+	var html =
+`<pre>
+${message}
+</pre>
+<button class="gitk">View commit in GitK</button>
+`;
+	modal(html, {});
+}
 
 function appMessage(text, goodBadUgly) {
     goodBadUgly = goodBadUgly || 'good';
@@ -166,39 +175,30 @@ function showMatches(matches, formatMatch) {
 }
 
 function gotoLine(n) {
-	$(window).scrollTop(n * appData.lineHeight - $('.source pre code').offset().top);
+	$(window).scrollTop(
+		n * appData.lineHeight - $('.source pre code').offset().top
+		- $(window).innerHeight() / 2
+		);
 }
 
 $(function() {
-    if (localStorage.settings) {
-        try {
-            var loadedSettings = JSON.parse(localStorage.settings);
-            settings           = loadedSettings;
-        } catch(ex) {
-            console.error('Failed to parse stored settings', localStorage.settings);
-        }
-    }
+    // if (localStorage.settings) {
+    //     try {
+    //         var loadedSettings = JSON.parse(localStorage.settings);
+    //         settings           = loadedSettings;
+    //     } catch(ex) {
+    //         console.error('Failed to parse stored settings', localStorage.settings);
+    //     }
+    // }
 
     ipcRenderer.on('flame-command-line', function(event, args) {
         args = args.slice(2); // Remove node, electron
         openFile(args[0]);
     });
-    // In renderer process (web page).
-    // ipcRenderer.on('render-icon', function(event, text) {
-        // updateIconAndTooltip(text);
-    // });
-
-    // ipcRenderer.on('debug', function(event, arg) {
-    //     debugArg = arg;
-    // });
 
     $(document.body).on('click', 'a.external.link',function(e) {
         e.preventDefault();
-        var href            = this.href;
-        // const BrowserWindow = require('electron').remote.BrowserWindow;
-        // var win             = new BrowserWindow();
-        // win.loadURL(href);
-        // win.show();
+        var href    = this.href;
         const shell = require('electron').shell;
         shell.openExternal(href);
     });
@@ -220,15 +220,23 @@ $(function() {
         }
     });
 
+    $(document).on('click', '.gitk', (e) => {
+    	if (appData.currentCommit) {
+    		modal.close();
+    		spawn('gitk', ['--select-commit=' + appData.currentCommit.hash]);
+    	}
+    });
+
     $('.source').on('click', function(e) {
         var line = getSourceLine(e.clientY);
         var note = appData.commitData[line];
         if (note) {
+        	appData.currentCommit = note;
         	highlightCommit(note);
         	gitLog(note.hash)
         		.then(function(message) {
 			        console.log(note);
-			        alert(message);
+			        commitMessage(message);
         		});
         }
     });
@@ -241,7 +249,7 @@ $(function() {
 				if (appData.searchMode === '@' && appData.matches.length) {
 					var match = appData.matches[appData.currentMatch];
 					var elt   = appData.symbols[match][0];
-					$(window).scrollTop(elt.offset().top);
+					$(window).scrollTop(elt.offset().top - $(window).innerHeight() / 2);
 					hideSearch();
 				} else {
 					hideSearch();
@@ -291,49 +299,4 @@ $(function() {
 
 	shortcuts.register('up', matchesNav);
 	shortcuts.register('down', matchesNav);
-
-//     globalCalendarElt = $('.info-details');
-//     window.Calendar   = globalCalendarElt.fullCalendar({
-//         editable: false,
-//         header:   {
-//             left: 'prev,next today',
-//             center: 'title',
-//             right: 'month,basicWeek,basicDay'
-//         },
-//         defaultDate: '2016-01-12',
-//         eventLimit:  true, // allow "more" link when too many events
-//         events:      function(start, end, timezone, cb) {
-//             var events = $('.info-hours').data().timeEntries;
-//             if (!events) {
-//                 cb([]);
-//                 return;
-//             }
-//             var out = [];
-//             events.forEach(function(item) {
-//                 var itemDate = moment(item.date);
-//                 if (itemDate >= start && itemDate < end) {
-//                     out.push({
-//                         id:          item.time_entry_id,
-//                         title:       itemTitle(item),
-//                         allDay:      true,
-//                         start:       item.date,
-//                         description: itemDescription(item),
-//                         entry:       item,
-//                     });
-//                 }
-//             });
-//             cb(out);
-//         },
-//         dayClick: function(date, jsEvent, view) {
-//             // alert('Clicked on: ' + date.format());
-//             // alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
-//             // alert('Current view: ' + view.name);
-//             // change the day's background color just for fun
-//             // $(this).css('background-color', 'red');
-//         },
-//         eventClick: function( event, jsEvent, view ) {
-//             require('./miniModal')(event.description, {style: false});
-//         },
-//     });
-//     globalCalendarElt.fullCalendar( 'gotoDate', moment());
 });
