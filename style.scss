@@ -119,23 +119,24 @@ h6, .h6 {
 
 
 
-.annotations {
-  max-width: 20vw;
-  display: inline-block;
+.lines {
+  display:        block;
   vertical-align: top;
+  margin-top:     8px;
+  padding-top:    0;
+  list-style:     none;
+  padding-left:   5px;
+  width:          100%;
+  position:       absolute;
+  left:           0;
+  top:            0;
+  right:          0;
+  bottom:         0;
+  z-index:        -1;
+  box-sizing:     border-box;
 
-  ul {
-    display:        inline-block;
-    max-width:      45%;
-    vertical-align: top;
-    margin-top:     0;
-    padding-top:    0;
-    list-style:     none;
-    padding-left:   0;
-  }
-
-  .other {
-    display: none;
+  .uncommitted {
+    background: #420000;
   }
 }
 
@@ -144,6 +145,8 @@ h6, .h6 {
   display:        inline-block;
   vertical-align: top;
   color:          white;
+  padding-left:   3vw;
+  box-sizing:     border-box;
 }
 
 .hljs, code, pre {
@@ -154,7 +157,6 @@ h6, .h6 {
 
 
 .search {
-  display:    none;
   width:      33vw;
   padding:    2em;
   background: rgba(255,255,255,0.5);
@@ -171,5 +173,16 @@ h6, .h6 {
     padding:    0.5em;
     margin:     0px auto;
     box-sizing: border-box;
+  }
+  .matches {
+    list-style:   none;
+    padding-left: 0;
+    li {
+      display: block;
+    }
+
+    .current {
+      background: #FFF182;
+    }
   }
 }

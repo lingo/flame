@@ -3,21 +3,28 @@
 // const fs           = require('fs');
 // const _            = require('lodash');
 const $               = require('jquery');
+const keycode         = require('keycode');
 // const fullCalendar = require('fullcalendar');
 const moment          = require('moment');
 const ipcRenderer     = require('electron').ipcRenderer;
 const BPromise        = require('bluebird');
 // const hilite       = require('highlight').Highlight;
 // const iconUtils    = require('./icons');
-const spawn           = require('child_process').spawn;
+// const spawn        = require('child_process').spawn;
 const fork            = require('child_process').fork;
+const spawnToOutput   = require('./spawnToOutput');
+
+const shortcuts       = require('./shortcuts');
 
 const MAX_LINE_HEIGHT = 32;
 
 var appData = {
-	lineHeight: 16,
-	commitData: [],
-	symbols:    {},
+	lineHeight:   16,
+	commitData:   [],
+	symbols:      {},
+	searchMode:   null,
+	currentMatch: null,
+	matches:      []
 };
 
 BPromise.config({
@@ -42,6 +49,23 @@ function appMessage(text, goodBadUgly) {
 }
 
 
+function buildSymbols($sourceElt) {
+	$sourceElt.find('.hljs-title').each((idx, elt) => {
+		var name              = $(elt).text();
+		appData.symbols[name] = appData.symbols[name] || [];
+		appData.symbols[name].push($(elt));
+	});
+}
+
+function findMatches(input) {
+	if (!input || input === '') {
+		return [];
+	}
+	var rx = input.split('').join('.*');
+	rx     = new RegExp(rx, (input.match(/[A-Z]/) ? '' : 'i'));
+	return Object.keys(appData.symbols).filter(k => k.match(rx));
+}
+
 function calcLineHeight($sourceElt) {
 	$sourceElt.find('span').each((idx, elt) => {
 		var $this = $(elt);
@@ -64,7 +88,11 @@ function openFile(fileName) {
 
 			var html = '';
 			for (let i = 1; i <= data.sourceLines.length; i++) {
-				html += `<li>${i}</li>`;
+				let cls = '';
+				if (data.commitData[i-1].hash === "0000000000000000000000000000000000000000") {
+					cls = 'class="uncommitted"';
+				}
+				html += `<li ${cls}>${i}</li>`;
 			}
 			$('.lines').html(html);
 
@@ -73,13 +101,59 @@ function openFile(fileName) {
 			worker.on('message', (msg) => {
 				$sourceElt.html(msg.result);
 				calcLineHeight($sourceElt);
-				// $('.source pre code .hljs')
+				buildSymbols($sourceElt);
 			});
 
 			worker.send({
 				source: source
 			});
 		});
+}
+
+function gitLog(commit) {
+	return spawnToOutput('git', ['log', '-n1', commit]);
+}
+
+function showSearch(type) {
+	appData.searchMode = type;
+	$('.search')
+		.removeClass('hidden')
+		.find('input')
+		.val('')
+		.attr('placeholder', type)
+		.focus();
+}
+
+function hideSearch() {
+	$('.search')
+		.addClass('hidden')
+		.find('.matches')
+		.addClass('hidden');
+}
+
+function showMatches(matches, formatMatch) {
+	appData.currentMatch = 0;
+	appData.matches      = matches;
+	var $search          = $('.search');
+	var $matches         = $search.find('.matches');
+	$matches.empty();
+	var html = '';
+	matches.forEach((m) => {
+		var txt = '';
+		if (typeof(formatMatch) === 'function') {
+			txt = `<li>${formatMatch(m)}</li>`;
+		} else {
+			txt = `<li>${m}</li>`;
+		}
+		html += txt;
+	});
+	$matches.html(html);
+	$matches.find('li:first').addClass('current');
+	$matches.removeClass('hidden');
+}
+
+function gotoLine(n) {
+	$(window).scrollTop(n * appData.lineHeight - $('.source pre code').offset().top);
 }
 
 $(function() {
@@ -137,15 +211,73 @@ $(function() {
         var line = getSourceLine(e.clientY);
         var note = appData.commitData[line];
         if (note) {
-            console.log(note);
-            var str = `
-${note.hash}
-${moment(note.committerTime).fromNow()}
-${note.author}
-`;
-            alert(str);
+        	gitLog(note.hash)
+        		.then(function(message) {
+			        console.log(note);
+			        alert(message);
+        		});
         }
     });
+
+    $('.search').on('keyup', 'input', (e) => {
+    	var $this = $(e.target);
+    	var input = $this.val();
+		switch (keycode(e)) {
+			case 'enter':
+				if (appData.searchMode === '@' && appData.matches.length) {
+					var match = appData.matches[appData.currentMatch];
+					var elt   = appData.symbols[match][0];
+					$(window).scrollTop(elt.offset().top);
+					hideSearch();
+				} else {
+					hideSearch();
+				}
+				break;
+			case 'esc':
+				hideSearch();
+				break;
+			default:
+				if (appData.searchMode === '@' && keycode(e) && keycode(e).match(/^([a-z$_.-])$/)) {
+					showMatches(findMatches(input));
+					$this.focus();
+				} else if(appData.searchMode === ':') {
+					gotoLine(input);
+				} else {
+					return true;
+				}
+		}
+		e.preventDefault();
+		return false;
+	});
+
+	shortcuts.listen(document);
+	shortcuts.register('ctrl+g', (e) => {
+		showSearch(':');
+	});
+	shortcuts.register('ctrl+r', (e) => {
+		showSearch('@');
+	});
+
+	var matchesNav = function(e) {
+		if ($('.search').hasClass('hidden')) {
+			return true;
+		}
+		var delta = (keycode(e) === 'down') ? 1 : -1;
+		var $matches = $('.matches');
+		$matches.find('li').removeClass('current');
+		appData.currentMatch += delta;
+		if (appData.currentMatch < 0) {
+			appData.currentMatch = appData.matches.length - 1;
+		}
+		if (appData.currentMatch >= appData.matches.length) {
+			appData.currentMatch = 0;
+		}
+		$($matches.find('li').get(appData.currentMatch)).addClass('current');
+	};
+
+	shortcuts.register('up', matchesNav);
+	shortcuts.register('down', matchesNav);
+
 //     globalCalendarElt = $('.info-details');
 //     window.Calendar   = globalCalendarElt.fullCalendar({
 //         editable: false,

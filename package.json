@@ -28,6 +28,7 @@
     "gulp-rename": "^1.2.2",
     "highlight": "^0.2.4",
     "highlight.js": "^9.3.0",
+    "keycode": "^2.1.1",
     "node-sass": "^3.4.2",
     "nodegit": "^0.11.9",
     "postcss-cssnext": "^2.4.0",
