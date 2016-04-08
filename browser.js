@@ -21,6 +21,7 @@ const MAX_LINE_HEIGHT = 32;
 var appData = {
 	lineHeight:   16,
 	commitData:   [],
+	commitLines:  {},
 	symbols:      {},
 	searchMode:   null,
 	currentMatch: null,
@@ -77,6 +78,13 @@ function calcLineHeight($sourceElt) {
 	});
 }
 
+function highlightCommit(commit) {
+	$('.lines li').removeClass('current');
+	appData.commitLines[commit.hash].forEach(l => {
+		$('.lines li').get(l).classList.add('current');
+	});
+}
+
 function openFile(fileName) {
 	var gitBlame = require('./gitblame');
 	gitBlame(fileName)
@@ -85,6 +93,11 @@ function openFile(fileName) {
 			var source         = data.sourceLines.join("\n");
 			var $sourceElt     = $('.source pre code');
 			$sourceElt.text(source);
+
+			data.commitData.forEach((commit, idx) => {
+				appData.commitLines[commit.hash] = appData.commitLines[commit.hash] || [];
+				appData.commitLines[commit.hash].push(idx);
+			});
 
 			var html = '';
 			for (let i = 1; i <= data.sourceLines.length; i++) {
@@ -211,6 +224,7 @@ $(function() {
         var line = getSourceLine(e.clientY);
         var note = appData.commitData[line];
         if (note) {
+        	highlightCommit(note);
         	gitLog(note.hash)
         		.then(function(message) {
 			        console.log(note);
