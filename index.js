@@ -1,17 +1,17 @@
+/* jshint node:true */
 'use strict';
-const path                  = require('path');
+// const path                  = require('path');
 const electron              = require('electron');
-const Menu                  = electron.Menu;
-const Tray                  = electron.Tray;
+// const Menu                  = electron.Menu;
+// const Tray                  = electron.Tray;
 const app                   = electron.app; // Module to control application life.
 const BrowserWindow         = electron.BrowserWindow; // Module to create native browser window.
 const ipcMain               = electron.ipcMain;
-const nativeImage           = electron.nativeImage;
-const _                     = require('lodash');
-const $                     = require('jquery');
+// const nativeImage           = electron.nativeImage;
+// const $                     = require('jquery');
 const BPromise              = require('bluebird');
 
-const myPath = path.join.bind(null, process.argv[1]);
+// const myPath = path.join.bind(null, process.argv[1]);
 
 BPromise.config({
     // Enable warnings.
@@ -53,7 +53,7 @@ app.on('window-all-closed', function() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
-    const screen = electron.screen;
+    // const screen = electron.screen;
 
     // Create the browser window.
     mainWindow = new BrowserWindow({
@@ -63,10 +63,6 @@ app.on('ready', function() {
         titleBarStyle:   'hidden',
         autoHideMenuBar: true,
         // frame:           false
-    });
-
-    electronLocalshortcut.register(mainWindow, 'F12', () => {
-        mainWindow.webContents.openDevTools();
     });
 
     // and load the index.html of the app.
@@ -85,72 +81,11 @@ app.on('ready', function() {
         app.quit();
     });
 
-
-
-    // ipcMain.on('count-hours', function(event, projectID) {
-    //     console.log('count-hours event initiated');
-    // });
-
-    // var appIcon = null;
-
-    // Menu.setApplicationMenu(null);
-    // appIcon = new Tray(myPath('icon.png'));
-    // appIcon.setToolTip('Freshbooks helper.');
-
-
-    // function updateMenuIcon(data) {
-    //     appIcon.setImage(nativeImage.createFromDataURL(data));
-    // }
-
-    // function updateMenu() {
-	   //  var template = [];
-
-    //     template.unshift({
-    //         type: 'separator'
-    //     });
-    //     template.unshift({
-    //         label: 'Settings...',
-    //         enabled: false
-    //     });
-    //     template.push({
-    //         type: 'separator'
-    //     });
-    //     template.push({
-    //         label:       'Quit',
-    //         role:        'quit',
-    //         accelerator: 'Alt+F4',
-    //         click:       function(e) {
-    //             console.log('menu event', e);
-    //             app.quit();
-    //         }
-    //     });
-    //     var contextMenu = Menu.buildFromTemplate(template);
-    //     appIcon.setContextMenu(contextMenu);
-    //     // mainWindow.webContents.send('debug', appIcon);
-    // }
-
-    // updateMenu();
-
-    // ipcMain.on('tooltip-data', function(event, data) {
-    //     appIcon.setToolTip(data);
-    // });
-    // ipcMain.on('icon-rendered', function(event, data) {
-    //     updateMenuIcon(data);
-    // });
-    // ipcMain.on('tray-adjust-menu', function(event, projects) {
-    // 	console.log('tray-adjust-menu event initiated');
-    // 	updateMenu(projects);
-    // });
+    ipcMain.on('flame-show-dev-tools', function(event, data) {
+        mainWindow.webContents.openDevTools();
+    });
 
     mainWindow.webContents.on('did-finish-load', function() {
         mainWindow.webContents.send('flame-command-line', process.argv);
     });
-    // appIcon.on('click', function(e) {
-    //     if (mainWindow.isVisible()) {
-    //         mainWindow.hide();
-    //     } else {
-    //         mainWindow.show();
-    //         mainWindow.focus();
-    //     }
-    // });
 });

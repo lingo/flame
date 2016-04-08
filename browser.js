@@ -37,13 +37,19 @@ BPromise.config({
 // var settings          = { };
 
 
-function commitMessage(message) {
+function commitMessage(message, options) {
+	if (typeof(options) === 'undefined') {
+		options = {
+			gitk: true
+		};
+	}
 	var html =
 `<pre>
 ${message}
-</pre>
-<button class="gitk">View commit in GitK</button>
-`;
+</pre>`;
+	if (options.gitk) {
+		html = html + '<button class="gitk">View commit in GitK</button>';
+	}
 	modal(html, {});
 }
 
@@ -232,6 +238,10 @@ $(function() {
         if (note) {
         	appData.currentCommit = note;
         	highlightCommit(note);
+        	if (note.hash.match(/^0+$/)) {
+        		commitMessage('Not yet committed', {gitk: false});
+        		return;
+        	}
         	gitLog(note.hash)
         		.then(function(message) {
 			        console.log(note);
@@ -277,6 +287,9 @@ $(function() {
 	});
 	shortcuts.register('ctrl+r', (e) => {
 		showSearch('@');
+	});
+	shortcuts.register('F12', (e) => {
+		ipcRenderer.send('flame-show-dev-tools');
 	});
 
 	var matchesNav = function(e) {
