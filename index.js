@@ -1,7 +1,6 @@
 'use strict';
 const path                  = require('path');
 const electron              = require('electron');
-const electronLocalshortcut = require('electron-localshortcut');
 const Menu                  = electron.Menu;
 const Tray                  = electron.Tray;
 const app                   = electron.app; // Module to control application life.
