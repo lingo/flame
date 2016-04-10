@@ -4,6 +4,12 @@
 This is a small (in concept, not size) app that functions similiarly to `git gui blame`, but with syntax highlighting
 and a simpler UI.
 
+## Features
+
+- Syntax highlighting for many languages (courtesy of [highlight.js](https://highlightjs.org/download/))
+- Jump to commit in log (requires GitK)
+- Function search (depending on language)
+
 ## Screenshots
 ### Initial view
 ![Initial view](doc/initialView.jpg)
