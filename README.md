@@ -4,6 +4,17 @@
 This is a small (in concept, not size) app that functions similiarly to `git gui blame`, but with syntax highlighting
 and a simpler UI.
 
+## Screenshots
+### Initial view
+![Initial view](doc/initialView.jpg)
+### Ctrl+R function search
+![Ctrl+R function search](doc/functionSearch.jpg)
+### Ctrl+G goto line
+![Ctrl+G goto line](doc/gotoLine.jpg)
+### Click on a line to show commit info
+![Show Commit on click](doc/showCommitOnClick.jpg)
+
+
 ## Build
 
 ```bash
