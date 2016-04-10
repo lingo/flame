@@ -62,7 +62,8 @@ app.on('ready', function() {
         show:            true,
         titleBarStyle:   'hidden',
         autoHideMenuBar: true,
-        // frame:           false
+        icon:            'assets/icon.png'
+        // frame:        false
     });
 
     // and load the index.html of the app.
